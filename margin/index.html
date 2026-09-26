@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내 상품, 팔수록 손해일까? · 무료 적자 판정기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0F6; --surface:#FFFFFF; --ink:#10213F; --muted:#5B6478; --line:#D9DEE8;
+  --navy:#10213F; --yellow:#FFD60A; --loss:#D6336C; --lossbg:#FFE3EC; --gain:#1B7A36; --gainbg:#E1F5E7;
+  --lock:#C9CFDB; --paper:#FFFFFF;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1222; --surface:#14203A; --ink:#E7ECF6; --muted:#9AA5BC; --line:#26344F;
+    --lossbg:#3A1726; --loss:#FF7BA3; --gainbg:#12321F; --gain:#5BD68A; --lock:#3A4863; --paper:#F7F8FB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1222; --surface:#14203A; --ink:#E7ECF6; --muted:#9AA5BC; --line:#26344F;
+  --lossbg:#3A1726; --loss:#FF7BA3; --gainbg:#12321F; --gain:#5BD68A; --lock:#3A4863; --paper:#F7F8FB;
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:460px;margin:0 auto;padding:0 18px 48px}
+.num{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-weight:400;letter-spacing:-.01em}
+header.hero{background:var(--navy);color:#fff;padding:34px 22px 28px;border-radius:0 0 28px 28px;margin:0 -18px 22px}
+.brand{font-size:13px;color:#C9D3E6;margin:0 0 18px}
+.brand b{color:var(--yellow);font-weight:700}
+h1{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-weight:400;font-size:40px;line-height:1.12;margin:0 0 12px}
+.hero p{margin:0;color:#C9D3E6;font-size:15px}
+form{background:var(--surface);border-radius:22px;padding:20px 18px;border:1px solid var(--line)}
+.field{margin-bottom:14px}
+label{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+.hint{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+.inputbox{display:flex;align-items:center;border:2px solid var(--line);border-radius:14px;background:var(--bg);padding:0 14px;transition:border-color .15s}
+.inputbox:focus-within{border-color:var(--yellow)}
+.inputbox input{flex:1;border:0;background:transparent;color:var(--ink);font-size:22px;font-family:'Black Han Sans','Noto Sans KR',sans-serif;padding:12px 0;min-width:0;outline:none}
+.inputbox span{color:var(--muted);font-weight:700}
+.inputbox input::placeholder{color:var(--muted);opacity:.45}
+button{font:inherit;cursor:pointer}
+.go{width:100%;border:0;border-radius:16px;background:var(--yellow);color:var(--navy);font-weight:900;font-size:18px;padding:16px;margin-top:6px}
+.go:focus-visible,.cta:focus-visible,.link:focus-visible,summary:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:13px;padding:10px 0 0;display:block;margin:0 auto}
+details{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.adv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.adv .inputbox input{font-size:17px;padding:9px 0}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;grid-column:1/-1}
+.toggle input{width:20px;height:20px;accent-color:var(--navy)}
+.err{color:var(--loss);font-size:13px;margin:8px 0 0;min-height:0}
+#result{display:none;margin-top:26px}
+#result.show{display:block;animation:rise .45s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#result.show{animation:none}}
+.verdict{text-align:center;margin:0 0 20px}
+.thought{font-size:15px;color:var(--muted)}
+.thought s{text-decoration-thickness:3px;text-decoration-color:var(--loss)}
+.big{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-size:clamp(30px,9.5vw,44px);line-height:1.15;margin:6px 0 4px;word-break:keep-all}
+.big.bad{color:var(--loss)}.big.ok{color:var(--gain)}
+.sub{font-size:14px;color:var(--muted);margin:0}
+/* receipt */
+.receipts{display:grid;gap:14px}
+.receipt{background:var(--paper);color:#10213F;border-radius:6px 6px 0 0;padding:18px 18px 22px;position:relative;
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 10px) no-repeat,radial-gradient(circle 7px at 50% 100%,transparent 6.5px,#000 7px) bottom/16px 10px repeat-x;
+  mask:linear-gradient(#000 0 0) top/100% calc(100% - 10px) no-repeat,radial-gradient(circle 7px at 50% 100%,transparent 6.5px,#000 7px) bottom/16px 10px repeat-x;
+  box-shadow:0 1px 0 var(--line)}
+.rhead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px dashed #C9CFDB;padding-bottom:10px;margin-bottom:8px}
+.rhead b{font-size:17px}
+.rhead small{color:#6B7385;font-size:12px}
+.row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
+.row span:last-child{font-variant-numeric:tabular-nums}
+.row.minus span:last-child{color:#B42358}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid #10213F;margin-top:10px;padding-top:10px}
+.total b{font-size:15px}
+.total .num{font-size:30px}
+.total .num.neg{color:#C92A5A}.total .num.pos{color:#1B7A36}
+/* grid */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:22px}
+.panel h2{font-size:17px;margin:0 0 4px}
+.panel p{margin:0 0 12px;font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tile{border-radius:10px;padding:8px 4px;text-align:center;font-size:10.5px;min-height:62px;display:flex;flex-direction:column;justify-content:center;gap:2px;word-break:keep-all}
+.tile .num{font-size:15px}
+.tile>span:first-child{font-size:9.5px;line-height:1.2}
+.tile.l{background:var(--lossbg);color:var(--loss)}.tile.g{background:var(--gainbg);color:var(--gain)}
+.tile.x{background:var(--lock);color:var(--muted);font-size:10px}
+.tile.x .q{font-size:17px;filter:blur(3px);user-select:none}
+.locks{list-style:none;padding:0;margin:0}
+.locks li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.locks li:last-child{border-bottom:0}
+.locks .k{flex-shrink:0;width:26px;height:26px;border-radius:8px;background:var(--lock);display:grid;place-items:center;font-size:13px}
+.locks b{display:block}
+.locks small{color:var(--muted)}
+.cta{display:block;text-align:center;text-decoration:none;background:var(--navy);color:#fff;border-radius:18px;padding:18px 16px;margin-top:22px;font-weight:900;font-size:18px;border:2px solid var(--yellow)}
+.cta small{display:block;font-weight:500;font-size:13px;color:var(--yellow);margin-top:2px}
+.fine{font-size:12px;color:var(--muted);margin-top:18px}
+.fine b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <p class="brand"><b>진짜마진</b> 무료 적자 판정기</p>
+  <h1>내 상품,<br>팔수록 손해일까?</h1>
+  <p>숫자 세 개만 넣으면 수수료·광고·반품·부가세까지 빼고 진짜 남는 돈을 알려드려요.</p>
+</header>
+
+<form id="f" novalidate>
+  <div class="field"><label for="w">도매가 <span class="hint">부가세 포함</span></label>
+    <div class="inputbox"><input id="w" inputmode="numeric" autocomplete="off" placeholder="4,500"><span>원</span></div></div>
+  <div class="field"><label for="p">판매가</label>
+    <div class="inputbox"><input id="p" inputmode="numeric" autocomplete="off" placeholder="9,900"><span>원</span></div></div>
+  <div class="field"><label for="k">택배비 <span class="hint">내가 내는 돈, 무료배송 기준</span></label>
+    <div class="inputbox"><input id="k" inputmode="numeric" autocomplete="off" placeholder="3,000"><span>원</span></div></div>
+  <button class="go" type="submit">3초 판정하기</button>
+  <p class="err" id="err" role="alert"></p>
+  <button class="link" type="button" id="ex">예시 넣어보기</button>
+  <details>
+    <summary>계산 조건 바꾸기</summary>
+    <div class="adv">
+      <div><label for="q">월 판매량</label><div class="inputbox"><input id="q" inputmode="numeric" value="120"><span>개</span></div></div>
+      <div><label for="pk">포장비</label><div class="inputbox"><input id="pk" inputmode="numeric" value="500"><span>원</span></div></div>
+      <label class="toggle"><input type="checkbox" id="ad" checked> 광고도 돌려요 (판매의 30%가 광고, ROAS 400% 가정)</label>
+    </div>
+  </details>
+</form>
+
+<section id="result" aria-live="polite">
+  <div class="verdict">
+    <div class="thought">생각한 마진 <s id="naive"></s></div>
+    <div class="big" id="bigline"></div>
+    <p class="sub" id="subline"></p>
+  </div>
+
+  <div class="receipts" id="receipts"></div>
+
+  <div class="panel">
+    <h2 id="gridtitle"></h2>
+    <p>쿠팡과 스마트스토어만 무료로 공개돼요. 나머지 8곳은 정식판에서 확인할 수 있어요.</p>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="panel">
+    <h2>정식판에서 더 알 수 있는 것</h2>
+    <ul class="locks">
+      <li><span class="k">🔒</span><div><b>나머지 8개 마켓 순이익과 순위</b><small>지마켓·옥션·11번가·롯데온·카카오·토스·올웨이즈·멸치</small></div></li>
+      <li><span class="k">🔒</span><div><b>광고 손익분기 ROAS</b><small>이 밑이면 광고할수록 손해인 기준선</small></div></li>
+      <li><span class="k">🔒</span><div><b>목표 마진 최소 판매가</b><small>마켓별로 100원 단위까지 역산</small></div></li>
+      <li><span class="k">🔒</span><div><b>상품 100개 한 번에 판정</b><small>적자 조합을 빨간색으로 골라내기</small></div></li>
+    </ul>
+  </div>
+
+  <a class="cta" id="cta" href="https://litt.ly/inhyukstore" target="_blank" rel="noopener">10개 마켓 전부 확인하기<small>엑셀 계산기 + 사용 가이드 · 오픈 할인 9,900원</small></a>
+
+  <p class="fine"><b>계산 기준</b> 일반과세자, 매입 세금계산서 받음, 반품률 3%(1건 손실 6,000원), 카테고리 최대 수수료 기준이라 실제보다 약간 보수적으로 나와요. 세금은 개당 예상치예요.</p>
+</section>
+</div>
+
+<script>
+(function(){
+  // [name, sale, pay, shipFee, affiliate, discountBase, server, serverThreshold]
+  var M=[["쿠팡",.1188,0,.033,0,0,55000,1000000],["스마트스토어",.03003,.0363,0,0,0,0,0],
+    ["지마켓",.13,0,.033,.02,0,55000,5000000],["옥션",.13,0,.033,.02,0,55000,5000000],
+    ["11번가",.13,0,.033,.02,1,77000,5000000],["롯데온",.13,0,.033,.02,0,55000,5000000],
+    ["카카오",.037,.033,0,0,0,0,0],["토스",.08,.03,0,0,0,0,0],["올웨이즈",.055,0,0,0,0,49000,1000000],["멸치",.12,0,0,0,1,0,0]];
+  var AFF=.1, RET=.03*6000;
+  var $=function(id){return document.getElementById(id)};
+  var won=function(n){return (n<0?"−":"")+Math.abs(Math.round(n)).toLocaleString("ko-KR")+"원"};
+  var val=function(id){return Number(String($(id).value).replace(/[^\d]/g,""))||0};
+  ["w","p","k","q","pk"].forEach(function(id){
+    $(id).addEventListener("input",function(e){var v=e.target.value.replace(/[^\d]/g,"");e.target.value=v?Number(v).toLocaleString("ko-KR"):""});
+  });
+  function calc(m,P,W,K,Q,PK,adOn){
+    var S=0, paid=P, rev=paid+S, base=m[5]?P:paid;
+    var server=(m[6]>0 && paid*Q>=m[7])?m[6]/Math.max(Q,1):0;
+    var fee=base*(m[1]+m[4]*AFF)+rev*m[2]+S*m[3];
+    var ad=adOn?paid*.3/4:0;
+    var ded=W+K+PK+fee+server+ad+RET;
+    var vat=(rev-ded)/11;
+    var net=rev-W-K-PK-fee-server-ad-RET-vat;
+    return {rev:rev,fee:fee,server:server,ad:ad,ret:RET,vat:vat,net:net,pk:PK};
+  }
+  function receipt(name,r,W,K){
+    var rows=[["고객 결제액",r.rev,0],["도매가",-W,1],["택배비 + 포장비",-(K+r.pk),1],["마켓 수수료",-r.fee,1]];
+    if(r.server>0) rows.push(["서버이용료 (개당)",-r.server,1]);
+    if(r.ad>0) rows.push(["광고비 (개당 평균)",-r.ad,1]);
+    rows.push(["반품 손실 (개당 평균)",-r.ret,1],["부가세 (개당 예상)",-r.vat,1]);
+    var h='<div class="receipt"><div class="rhead"><b>'+name+' 정산서</b><small>1개 팔았을 때</small></div>';
+    rows.forEach(function(x){var neg=x[1]<0;h+='<div class="row'+(neg?' minus':'')+'"><span>'+x[0]+'</span><span>'+(x[2]&&!neg&&x[1]>0?'+':'')+won(x[1])+'</span></div>'});
+    h+='<div class="total"><b>진짜 남는 돈</b><span class="num '+(r.net<0?'neg':'pos')+'">'+won(r.net)+'</span></div></div>';
+    return h;
+  }
+  $("ex").addEventListener("click",function(){$("w").value="4,500";$("p").value="9,900";$("k").value="3,000";$("f").requestSubmit?$("f").requestSubmit():run()});
+  $("f").addEventListener("submit",function(e){e.preventDefault();run()});
+  function run(){
+    var W=val("w"),P=val("p"),K=val("k"),Q=val("q")||1,PK=val("pk"),adOn=$("ad").checked;
+    if(!W||!P){$("err").textContent="도매가와 판매가를 입력해 주세요.";return}
+    if(P<=W){$("err").textContent="판매가가 도매가보다 낮거나 같아요. 숫자를 다시 확인해 주세요.";return}
+    $("err").textContent="";
+    var rs=M.map(function(m){return calc(m,P,W,K,Q,PK,adOn)});
+    var loss=rs.filter(function(r){return r.net<0}).length;
+    $("naive").textContent=won(P-W-K);
+    var big=$("bigline");
+    if(loss>0){big.className="big bad";big.textContent="10곳 중 "+loss+"곳이 적자";}
+    else{big.className="big ok";big.textContent="10곳 모두 흑자";}
+    $("subline").textContent=loss>0?"어느 마켓인지는 아래에서 일부 확인할 수 있어요.":"그래도 마켓마다 남는 돈이 달라요. 어디가 제일 남는지 확인해 보세요.";
+    $("receipts").innerHTML=receipt("쿠팡",rs[0],W,K)+receipt("스마트스토어",rs[1],W,K);
+    var g="";
+    rs.forEach(function(r,i){
+      if(i<2) g+='<div class="tile '+(r.net<0?'l':'g')+'"><span>'+M[i][0]+'</span><span class="num">'+won(r.net).replace("원","")+'</span></div>';
+      else g+='<div class="tile x"><span>'+M[i][0]+'</span><span class="q">0,000</span><span>🔒</span></div>';
+    });
+    $("grid").innerHTML=g;
+    var hidden=rs.slice(2).filter(function(r){return r.net<0}).length;
+    $("gridtitle").textContent=hidden>0?"잠긴 8곳 중 "+hidden+"곳도 적자예요":"잠긴 8곳의 순위를 확인해 보세요";
+    var s=$("result");s.classList.remove("show");void s.offsetWidth;s.classList.add("show");
+    setTimeout(function(){s.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})},50);
+  }
+})();
+</script>
+</body>
+</html>
