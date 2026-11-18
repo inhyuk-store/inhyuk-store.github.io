@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>상품명 금칙어 검사기 · 진짜마진</title>
+<meta name="description" content="스마트스토어·쿠팡 상품명에 쓰면 안 되는 단어를 등록 전에 무료로 걸러드립니다. 엑셀 통째로 검사 가능.">
+<meta property="og:title" content="상품명 금칙어 검사기 · 무료">
+<meta property="og:description" content="최저가·무료배송·고급·1위… 등록 전에 걸러내세요. 쿠팡·스마트스토어 규정 기준.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0F6; --surface:#FFFFFF; --ink:#10213F; --muted:#5B6478; --line:#D9DEE8;
+  --navy:#10213F; --yellow:#FFD60A; --red:#D6336C; --redbg:#FFE3EC; --amber:#B86E00; --amberbg:#FFF1D6;
+  --gray:#5B6478; --graybg:#EEF1F6; --ok:#1B7A36; --okbg:#E1F5E7;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1222; --surface:#14203A; --ink:#E7ECF6; --muted:#9AA5BC; --line:#26344F;
+    --red:#FF7BA3; --redbg:#3A1726; --amber:#FFC266; --amberbg:#3A2A10; --gray:#B3BCCD; --graybg:#1E2B45; --ok:#5BD68A; --okbg:#12321F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1222; --surface:#14203A; --ink:#E7ECF6; --muted:#9AA5BC; --line:#26344F;
+  --red:#FF7BA3; --redbg:#3A1726; --amber:#FFC266; --amberbg:#3A2A10; --gray:#B3BCCD; --graybg:#1E2B45; --ok:#5BD68A; --okbg:#12321F;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 56px}
+.hero{background:var(--navy);color:#fff;padding:34px 22px 28px;border-radius:0 0 28px 28px;margin:0 -16px 22px}
+.brand{font-size:13px;color:#C9D3E6;margin:0 0 16px}.brand b{color:var(--yellow)}
+h1{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-weight:400;font-size:clamp(32px,8vw,42px);line-height:1.15;margin:0 0 12px;word-break:keep-all}
+h1 em{font-style:normal;color:var(--yellow)}
+.hero p{margin:0;color:#C9D3E6;font-size:15px;word-break:keep-all}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px 18px;margin-bottom:16px}
+.seg{display:flex;background:var(--bg);border-radius:14px;padding:4px;gap:4px;margin-bottom:16px}
+.seg button{flex:1;border:0;border-radius:11px;padding:10px 6px;background:transparent;color:var(--muted);font:inherit;font-weight:700;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+label.t{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+.hint{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+textarea{width:100%;min-height:132px;resize:vertical;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:12px 14px;outline:none}
+textarea:focus{border-color:var(--yellow)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.go{flex:1 1 200px;border:0;border-radius:16px;background:var(--yellow);color:#10213F;font:inherit;font-weight:900;font-size:18px;padding:15px;cursor:pointer}
+.ghost{border:2px dashed var(--line);border-radius:16px;background:transparent;color:var(--ink);font:inherit;font-weight:700;padding:13px 14px;cursor:pointer;flex:1 1 200px;text-align:center}
+.ghost:hover{border-color:var(--yellow)}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;font:inherit;font-size:13px;cursor:pointer;padding:6px 0}
+button:focus-visible,.ghost:focus-within{outline:3px solid var(--ink);outline-offset:3px}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}
+#file{position:absolute;opacity:0;width:1px;height:1px}
+.msg{font-size:13px;color:var(--red);margin:8px 0 0}
+#out{display:none}#out.show{display:block;animation:rise .4s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#out.show{animation:none}}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{border-radius:16px;padding:14px 12px;text-align:center}
+.stat b{display:block;font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-weight:400;font-size:32px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;font-weight:700}
+.s3{background:var(--redbg);color:var(--red)}.s2{background:var(--amberbg);color:var(--amber)}.s0{background:var(--okbg);color:var(--ok)}
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+.chip{font-size:12px;font-weight:700;border-radius:999px;padding:5px 10px;background:var(--graybg);color:var(--gray);border:0;cursor:pointer;font-family:inherit}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+.tools h2{font-size:16px;margin:0}
+.dl{border:0;border-radius:12px;background:var(--navy);color:#fff;font:inherit;font-weight:700;font-size:14px;padding:9px 14px;cursor:pointer}
+:root[data-theme="dark"] .dl{background:var(--yellow);color:#10213F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .dl{background:var(--yellow);color:#10213F}}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:10px}
+.item .nm{font-size:16px;font-weight:500;word-break:break-all;margin:0 0 10px}
+mark{border-radius:5px;padding:0 2px;font-weight:700}
+mark.m3{background:var(--redbg);color:var(--red);text-decoration:line-through;text-decoration-thickness:2px}
+mark.m2{background:var(--amberbg);color:var(--amber)}
+mark.m1{background:var(--graybg);color:var(--gray)}
+ul.hits{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ul.hits li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px;align-items:start}
+.badge{font-size:11px;font-weight:900;border-radius:6px;padding:2px 7px;white-space:nowrap;margin-top:1px}
+.hits p{margin:0;color:var(--muted);word-break:keep-all}
+.hits p b{color:var(--ink)}
+.fix{display:block;color:var(--ink);font-weight:500}
+.clean{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;display:flex;gap:8px;align-items:flex-start}
+.clean div{flex:1;font-size:14px;word-break:break-all}
+.clean small{display:block;color:var(--muted);font-size:12px;font-weight:700}
+.copy{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;font:inherit;font-size:13px;font-weight:700;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.more{width:100%;margin-top:6px}
+.allok{text-align:center;padding:26px 10px}
+.allok b{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-weight:400;font-size:30px;color:var(--ok);display:block}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:6px 0 0}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+footer{font-size:12px;color:var(--muted);margin-top:28px;line-height:1.7}
+footer a{color:var(--muted)}
+.next{display:block;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-top:22px}
+.next small{color:var(--muted);display:block;font-size:12px}
+.next b{font-size:16px}
+@media (max-width:420px){.stat b{font-size:26px}.sum{gap:6px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="brand"><b>진짜마진</b> · 무료 셀러 도구</p>
+    <h1>등록 전에<br><em>걸리는 단어</em>부터<br>빼고 올리세요</h1>
+    <p>최저가·무료배송·고급·1위·○○st… 쿠팡·스마트스토어 상품명 규정에 걸리는 단어를 찾아서, 이유와 고친 상품명까지 보여드려요.</p>
+  </header>
+
+  <section class="card" aria-label="검사하기">
+    <div class="seg" role="group" aria-label="마켓 선택">
+      <button type="button" data-mk="c" aria-pressed="true">쿠팡</button>
+      <button type="button" data-mk="n" aria-pressed="false">스마트스토어</button>
+    </div>
+    <label class="t" for="names">상품명 <span class="hint">한 줄에 하나씩 · 여러 개 가능</span></label>
+    <textarea id="names" placeholder="예) [무료배송] 최고급 스텐 수저통 1+1 당일발송!!"></textarea>
+    <div class="row">
+      <button type="button" class="go" id="run">검사하기</button>
+      <label class="ghost" for="file">📂 엑셀·CSV 통째로 검사<input type="file" id="file" accept=".xlsx,.xls,.csv,.txt"></label>
+    </div>
+    <p class="msg" id="msg" role="alert"></p>
+    <button type="button" class="link" id="ex">예시 넣어보기</button>
+    <p class="note">🔒 검사는 내 브라우저 안에서만 돌아가요. 상품명·파일은 어디에도 전송되지 않습니다.<br>쿠팡 '상품 일괄변경' 엑셀이나 스마트스토어 상품 다운로드 엑셀을 그대로 넣으면 상품명 칸을 알아서 찾습니다.</p>
+  </section>
+
+  <section id="out" aria-live="polite">
+    <div class="sum" id="sum"></div>
+    <div class="cats" id="cats"></div>
+    <div class="legend"><span><mark class="m3">취소선</mark> 위험 · 빼는 걸 권장</span><span><mark class="m2">노랑</mark> 주의 · 근거 없으면 빼기</span><span><mark class="m1">회색</mark> 참고</span></div>
+    <div class="tools"><h2 id="listTitle"></h2><button type="button" class="dl" id="dl">결과 엑셀(CSV) 받기</button></div>
+    <div id="list"></div>
+  </section>
+
+  <a class="next" href="../margin/">
+    <small>상품명 다 고쳤으면, 다음은 가격</small>
+    <b>내 상품, 팔수록 손해일까? → 무료 적자 판정기</b>
+  </a>
+
+  <footer>
+    <p><b>검사 기준</b> (2026년 11월 정리) — 쿠팡 상품명 작성 가이드(최대 120자, 금지 특수문자·홍보 문구·주관적 품질 표현·배송/시즌 문구·같은 단어 3회 이상 반복 금지), 네이버 쇼핑 상품명 권장 구조(과장·판촉 문구, 특수문자, 타사 브랜드 지양), 표시광고법·식품표시광고법·화장품법의 효능·최상급 표현 제한.</p>
+    <p>이 검사기는 등록 전에 위험 단어를 미리 찾아주는 참고 도구예요. 마켓이 실제로 반려·수정 요청하는 기준은 카테고리와 시점에 따라 달라질 수 있고, 법률 자문이 아닙니다. 공식 브랜드명·모델명에 들어간 단어는 예외일 수 있어요.</p>
+    <p>빠진 단어나 잘못 잡는 단어가 있으면 쓰레드 <a href="https://www.threads.net/@margin_check" rel="noopener">@margin_check</a>로 알려주세요. 바로 반영합니다.</p>
+  </footer>
+</div>
+
+<script>
+// 상품명 금칙어 검사 엔진 — 진짜마진
+// sev: 3=위험(규정 위반 가능성 높음) 2=주의(근거·인증 없으면 위험) 1=참고(노출에 불리)
+// mk: c=쿠팡 n=스마트스토어 (둘 다면 "cn")
+var RULES = [
+  // ── 판촉·홍보 문구
+  {cat:"판촉 문구", sev:3, mk:"cn", w:["무료배송","무배","무료 배송"], why:"배송 혜택은 상품명이 아니라 배송비 설정으로 표시해야 합니다.", fix:"삭제 → 배송비 설정에서 무료배송 지정"},
+  {cat:"판촉 문구", sev:3, mk:"cn", w:["최저가","초특가","특가","땡처리","반값","파격세일","re:세일(?!러)","SALE","할인","핫딜","타임딜"], why:"가격·할인 홍보 문구는 쿠팡 금지 문구이고, 네이버도 노출 노이즈로 봅니다.", fix:"삭제 → 할인은 즉시할인·쿠폰 기능으로"},
+  {cat:"판촉 문구", sev:3, mk:"cn", w:["사은품","증정","이벤트","리뷰이벤트","쿠폰","적립"], why:"이벤트·증정 문구는 상품명이 아닌 혜택 설정 영역에 넣어야 합니다.", fix:"삭제 → 상세페이지·혜택 설정에 표기"},
+  {cat:"판촉 문구", sev:2, mk:"cn", w:["1+1","2+1"], why:"묶음 행사 문구로 보일 수 있습니다. 실제 구성이면 수량으로 쓰는 게 안전합니다.", fix:"구성 수량으로 (예: 2개)"},
+  {cat:"판촉 문구", sev:3, mk:"cn", w:["한정수량","한정판매","품절임박","재입고","마감임박","지금구매"], why:"구매를 재촉하는 문구는 쿠팡 금지 문구입니다.", fix:"삭제"},
+  {cat:"판촉 문구", sev:3, mk:"c", w:["신상품","신상","신규","최신","인기상품","인기","강추","추천","MD추천","대박","꿀템","가성비"], why:"쿠팡은 신규·최신·인기상품 같은 문구를 금지합니다.", fix:"삭제 → 실제 스펙(소재·사이즈·용량)으로 대체"},
+  {cat:"판촉 문구", sev:1, mk:"n", w:["신상품","신상","신규","최신","인기상품","인기","강추","추천","MD추천","대박","꿀템","가성비"], why:"검색어로 쓰이지 않는 수식어라 네이버 노출에 도움이 안 됩니다.", fix:"실제 스펙(소재·사이즈·용량)으로 대체"},
+  // ── 배송·기간
+  {cat:"배송·시즌 문구", sev:3, mk:"c", w:["당일발송","당일출고","당일배송","오늘출발","오늘발송","빠른배송","국내발송","묶음배송","무료반품"], why:"배송 정보는 쿠팡 상품명 금지 문구입니다.", fix:"삭제 → 출고 기한 설정으로"},
+  {cat:"배송·시즌 문구", sev:2, mk:"n", w:["당일발송","당일출고","당일배송","오늘출발","오늘발송","빠른배송","국내발송","묶음배송","무료반품"], why:"배송 문구는 오늘출발 등 공식 설정으로 표시하는 게 원칙입니다.", fix:"삭제 → 오늘출발·배송 설정으로"},
+  {cat:"배송·시즌 문구", sev:3, mk:"c", w:["크리스마스","어린이날","어버이날","빼빼로데이","블랙프라이데이","추석선물","설선물","명절선물"], why:"쿠팡은 기간 한정·시즌 문구를 금지합니다(공식 시리즈명 제외).", fix:"삭제 → 용도는 '선물세트'처럼 일반 표현으로"},
+  // ── 주관적 품질
+  {cat:"주관·과장 표현", sev:3, mk:"c", w:["고급형","최고급","고급","고품질","프리미엄","실속형","실속"], why:"쿠팡은 고급·고품질·실속 같은 주관적 품질 표현을 금지합니다(공식 라인명 제외).", fix:"삭제 → '스텐304', '두께 5mm'처럼 근거 있는 스펙으로"},
+  {cat:"주관·과장 표현", sev:2, mk:"n", w:["고급형","최고급","고급","고품질","프리미엄","실속형","실속"], why:"근거 없는 품질 수식어는 과장 표현으로 보일 수 있고 검색에도 안 쓰입니다.", fix:"근거 있는 스펙으로 대체"},
+  {cat:"주관·과장 표현", sev:3, mk:"cn", w:["최고","최상","최강","최초","세계최초","국내최초","업계최초","1위","1등","넘버원","No.1","NO.1","유일","독보적","압도적","완벽","극강"], why:"객관적으로 증명하기 어려운 최상급 표현은 표시광고법상 과장 광고가 될 수 있습니다.", fix:"삭제 (수상·인증이 있으면 상세페이지에 근거와 함께)"},
+  // ── 효능·의학 오인 (식품·화장품·생활용품)
+  {cat:"효능·의학 표현", sev:3, mk:"cn", w:["치료","완치","특효","질병","처방","항암","염증","통증완화","당뇨","관절염","탈모치료","발모","아토피","여드름치료","피부재생","세포재생","면역력","해독","독소배출"], why:"일반 상품에 질병 예방·치료 효능을 표시하면 식품표시광고법·화장품법·의료기기법 위반이 될 수 있습니다.", fix:"삭제 (의료기기·건강기능식품 허가가 있으면 허가받은 문구만)"},
+  {cat:"효능·의학 표현", sev:2, mk:"cn", w:["예방","다이어트","살빠지는","지방분해","체지방","디톡스","주름개선","미백","교정","자세교정","거북목","혈액순환","숙면","피로회복","혈압","혈당"], why:"기능성 인증·허가 없이 쓰면 효능 오인 광고가 될 수 있습니다.", fix:"인증이 없으면 삭제 → '등받이 쿠션'처럼 형태·용도로"},
+  {cat:"효능·의학 표현", sev:2, mk:"cn", w:["항균","살균","멸균","99.9%","무독성","무해","유해물질제로","친환경","re:천연(?!\\s?(가죽|고무|소가죽|라텍스))","음이온","원적외선","게르마늄"], why:"시험성적서·인증 근거가 없으면 부당 표시광고가 될 수 있습니다(생활화학제품은 특히 엄격).", fix:"성적서 있으면 상세페이지에 근거와 함께, 없으면 삭제"},
+  // ── 위조·상표
+  {cat:"상표·위조 연상", sev:3, mk:"cn", w:["레플리카","레플","미러급","정품급","이미테이션","짝퉁","가품","st스타일"], why:"위조품을 연상시키는 표현은 상표권 침해·판매 정지 사유입니다.", fix:"삭제"},
+  {cat:"상표·위조 연상", sev:2, mk:"cn", w:["나이키","아디다스","뉴발란스","샤넬","구찌","루이비통","프라다","에르메스","디올","몽클레어","스탠리","다이슨","르크루제","무인양품","이케아","디즈니","포켓몬","산리오","헬로키티","짱구","카카오프렌즈","라인프렌즈","스누피","아이폰","에어팟","갤럭시","버즈"], why:"타사 브랜드·캐릭터명은 정식 제품·라이선스가 아니면 상표권 침해와 검색 어뷰징이 될 수 있습니다. '호환'으로 써도 위험할 수 있어요.", fix:"정품·라이선스가 아니면 삭제 → 호환 정보는 상세페이지에"},
+  // ── 의미 없는 값
+  {cat:"의미 없는 값", sev:3, mk:"c", w:["null","속성없음","해당없음","상세페이지 참조","상세페이지참조","상세 설명 참조","상세설명참조","본상품선택","단일상품","선택옵션"], why:"쿠팡은 시스템 용어·의미 없는 단어를 상품명에 금지합니다.", fix:"삭제 → 실제 옵션값(색상·사이즈)으로"},
+  {cat:"의미 없는 값", sev:1, mk:"n", w:["null","속성없음","해당없음","상세페이지 참조","상세페이지참조","상세 설명 참조","상세설명참조","본상품선택","단일상품","선택옵션"], why:"고객이 검색하지 않는 단어라 상품명 길이만 차지합니다.", fix:"삭제"}
+];
+
+var NUMWORD = {"한개":"1개","두개":"2개","세개":"3개","네개":"4개","다섯개":"5개","여섯개":"6개","일곱개":"7개","여덟개":"8개","아홉개":"9개","열개":"10개"};
+var DECO = /[!$?_{}^*%@#~<>\[\]|=★☆♥♡♣♠◆◇■□●○▶▷◀◁▲△▼▽※♪♬✔✓✅❤🔥💯【】「」『』《》〈〉]/g;
+var CODE = /\b[a-z]{2,4}\+\d{2,6}[A-Za-z]{1,3}\b/g; // 위탁몰 자동 코드 (예: inh+12345AB)
+var CJK = /[一-鿿぀-ヿ؀-ۿ]/g;
+var LIMITS = {c:{max:120, rec:80, name:"쿠팡"}, n:{max:100, rec:50, name:"스마트스토어"}};
+
+function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
+
+// 단어를 정규식으로 (공백 무시 매칭). 영문은 단어 경계 적용.
+var COMPILED = RULES.map(function(r){
+  var parts = r.w.slice().sort(function(a,b){return b.length-a.length;}).map(function(w){
+    if (w==="st스타일") return "(?<=[가-힣])st(?![a-zA-Z])";
+    if (w.indexOf("re:")===0) return w.slice(3);
+    var p = w.split("").map(function(ch){return ch===" " ? "\\s*" : esc(ch);}).join("\\s?");
+    if (/^[A-Za-z.0-9%]+$/.test(w)) p = "(?<![A-Za-z])" + p + "(?![A-Za-z])";
+    return p;
+  });
+  return Object.assign({}, r, {re: new RegExp(parts.join("|"), "gi")});
+});
+
+function checkName(name, market){
+  var hits = [], s = String(name||"").trim();
+  if (!s) return {name:s, hits:hits, score:0, clean:s};
+  COMPILED.forEach(function(r){
+    if (r.mk.indexOf(market) < 0) return;
+    r.re.lastIndex = 0; var m;
+    while ((m = r.re.exec(s))){
+      if (!m[0]) { r.re.lastIndex++; continue; }
+      // "할인" 안의 "인" 같은 겹침 방지: 이미 같은 위치를 잡았으면 건너뜀
+      if (hits.some(function(h){return m.index < h.end && m.index + m[0].length > h.start;})) continue;
+      hits.push({start:m.index, end:m.index+m[0].length, word:m[0], cat:r.cat, sev:r.sev, why:r.why, fix:r.fix, del: r.fix.indexOf("삭제")===0});
+    }
+  });
+  var m2;
+  CODE.lastIndex = 0;
+  while ((m2 = CODE.exec(s))) hits.push({start:m2.index,end:m2.index+m2[0].length,word:m2[0],cat:"내부 코드",sev:2,
+    why:"위탁몰이 자동으로 붙인 상품 코드입니다. 고객은 검색하지 않는 문자열이고, 쿠팡은 판매자 내부 ID를 상품명에 넣지 못하게 합니다.",
+    fix:"삭제 → 업체상품코드 칸으로 옮기기 (주문 연동에 쓰는지 먼저 확인)", del:true});
+  DECO.lastIndex = 0;
+  while ((m2 = DECO.exec(s))){
+    var pv = s.charAt(m2.index-1), nx = s.charAt(m2.index+1);
+    if (m2[0]==="~" && /\d/.test(pv) && /\d/.test(nx)) continue; // 13~30 같은 범위 표기는 허용
+    if (m2[0]==="*" && /[\dA-Za-z]/.test(pv) && /\d/.test(nx)){
+      hits.push({start:m2.index,end:m2.index+1,word:"*",cat:"꾸밈 특수문자",sev:2,why:"수량 곱하기 표시로 *를 쓰면 금지 특수문자에 걸릴 수 있습니다.",fix:"x 로 바꾸기 (예: 200g x 10개)",del:false,rep:" x "});
+      continue;
+    }
+    hits.push({start:m2.index,end:m2.index+m2[0].length,word:m2[0],cat:"꾸밈 특수문자",sev:market==="c"?3:2,
+    why:"강조용 특수문자는 쿠팡 금지, 네이버에서도 노출에 불리합니다.", fix:"삭제 (괄호가 필요하면 띄어쓰기로)", del:true});
+  }
+  CJK.lastIndex = 0;
+  if (CJK.test(s)) hits.push({start:-1,end:-1,word:"한자·일본어",cat:"지원 안 되는 문자",sev:market==="c"?3:1,why:"중국어·일본어 문자는 쿠팡 상품명에 넣을 수 없습니다.",fix:"한국어로 번역",del:false});
+  Object.keys(NUMWORD).forEach(function(k){var i=s.indexOf(k); if(i>=0) hits.push({start:i,end:i+k.length,word:k,cat:"숫자 표기",sev:market==="c"?2:1,why:"수량은 아라비아 숫자로 써야 합니다.",fix:NUMWORD[k],del:false,rep:NUMWORD[k]});});
+  // 단어 반복
+  var tokens = s.replace(CODE,"").replace(DECO," ").split(/[\s,/()+]+/).filter(function(t){return t.length>=2;});
+  var cnt = {}; tokens.forEach(function(t){var k=t.toLowerCase(); cnt[k]=(cnt[k]||0)+1;});
+  Object.keys(cnt).forEach(function(k){
+    if (cnt[k]>=3 || (cnt[k]===2 && market==="n")) hits.push({start:-1,end:-1,word:k+" ×"+cnt[k],cat:"키워드 반복",
+      sev: cnt[k]>=3 ? (market==="c"?3:2) : 1,
+      why: market==="c" ? "쿠팡은 같은 단어를 두 번 넘게 쓰지 못하게 합니다." : "같은 키워드 반복은 어뷰징으로 보일 수 있어 한 번만 쓰는 게 안전합니다.",
+      fix:"한 번만 남기기", del:false});
+  });
+  // 길이
+  var L = LIMITS[market], len = s.length;
+  if (len > L.max) hits.push({start:-1,end:-1,word:len+"자",cat:"길이",sev:3,why:L.name+" 상품명 최대 "+L.max+"자를 넘습니다.",fix:L.max+"자 이내로",del:false});
+  else if (len > L.rec) hits.push({start:-1,end:-1,word:len+"자",cat:"길이",sev:1,why:L.name+" 권장 길이("+L.rec+"자 안팎)보다 깁니다. 모바일에서 잘려 보여요.",fix:"핵심 키워드 위주로 "+L.rec+"자 안팎",del:false});
+
+  hits.sort(function(a,b){return b.sev-a.sev || a.start-b.start;});
+  var score = hits.reduce(function(m,h){return Math.max(m,h.sev);},0);
+  return {name:s, hits:hits, score:score, clean:cleanName(s, hits)};
+}
+
+function cleanName(s, hits){
+  var spans = hits.filter(function(h){return h.start>=0 && (h.del || h.rep);}).sort(function(a,b){return b.start-a.start;});
+  var out = s;
+  spans.forEach(function(h){ out = out.slice(0,h.start) + (h.rep ? h.rep : " ") + out.slice(h.end); });
+  // 같은 단어 3번 이상 → 첫 번째만 남김
+  var seen = {};
+  out = out.split(/(\s+)/).filter(function(t){
+    if (/^\s+$/.test(t) || t.length<2) return true;
+    var k=t.toLowerCase(); seen[k]=(seen[k]||0)+1; return seen[k]<=2;
+  }).join("");
+  return out.replace(/\(\s*\)/g,"").replace(/\s*,\s*,/g,",").replace(/\s{2,}/g," ").replace(/^[\s,/+-]+|[\s,/+-]+$/g,"").trim();
+}
+
+if (typeof module !== "undefined") module.exports = {checkName:checkName, RULES:RULES};
+
+</script>
+<script>
+(function(){
+  var market = "c", results = [], filter = "all", shown = 30;
+  var $ = function(id){return document.getElementById(id);};
+  var SEVNAME = {3:"위험",2:"주의",1:"참고"};
+
+  document.querySelectorAll(".seg button").forEach(function(b){
+    b.addEventListener("click", function(){
+      market = b.dataset.mk;
+      document.querySelectorAll(".seg button").forEach(function(x){x.setAttribute("aria-pressed", x===b);});
+      if (results.length) run(results.map(function(r){return r.name;}), true);
+    });
+  });
+
+  $("ex").addEventListener("click", function(){
+    $("names").value = "[무료배송] 최고급 스텐 수저통 1+1 당일발송!!\n샤넬st 트위드 자켓 신상 여성 봄 아우터\n아토피 완화 유아 보습 로션 두개 세트\n수납 바구니 주방 수납 바구니 수납 정리함\n스텐 타공 걸이식 수저통 수저걸이 inh+89436KC\n국산 원목 도마 대형 40x25cm";
+    run(lines($("names").value));
+  });
+  $("run").addEventListener("click", function(){
+    var L = lines($("names").value);
+    if (!L.length){ $("msg").textContent = "상품명을 한 줄 이상 넣어주세요."; return; }
+    run(L);
+  });
+  $("names").addEventListener("keydown", function(e){ if ((e.ctrlKey||e.metaKey) && e.key==="Enter") $("run").click(); });
+
+  function lines(t){
+    var seen = {};
+    return t.split(/\r?\n/).map(function(s){return s.trim();}).filter(function(s){ if(!s||seen[s]) return false; seen[s]=1; return true; });
+  }
+
+  // ── 파일
+  $("file").addEventListener("change", function(e){
+    var f = e.target.files[0]; if (!f) return;
+    $("msg").textContent = "";
+    if (/\.(csv|txt)$/i.test(f.name)){
+      var rd = new FileReader();
+      rd.onload = function(){ fromRows(parseCSV(String(rd.result))); };
+      rd.readAsText(f, "utf-8");
+    } else {
+      loadXLSX(function(){
+        var rd = new FileReader();
+        rd.onload = function(){
+          try{
+            var wb = XLSX.read(new Uint8Array(rd.result), {type:"array"});
+            var best = [];
+            wb.SheetNames.forEach(function(n){
+              var ws = wb.Sheets[n]; fixRef(ws);
+              var rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:""});
+              var got = pickNames(rows); if (got.length > best.length) best = got;
+            });
+            if (!best.length) throw 0;
+            $("names").value = best.join("\n"); run(best);
+          }catch(err){ $("msg").textContent = "상품명 칸을 못 찾았어요. 상품명만 복사해서 위 칸에 붙여넣어 주세요."; }
+        };
+        rd.readAsArrayBuffer(f);
+      });
+    }
+    e.target.value = "";
+  });
+  // 쿠팡 등 일부 엑셀은 시트 범위 정보가 잘못 저장돼 있어 실제 셀 기준으로 다시 계산
+  function fixRef(ws){
+    var R=0, C=0;
+    Object.keys(ws).forEach(function(k){ if (k[0]==="!") return; var a = XLSX.utils.decode_cell(k); if (a.r>R) R=a.r; if (a.c>C) C=a.c; });
+    ws["!ref"] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:R,c:C}});
+  }
+  function loadXLSX(cb){
+    if (window.XLSX) return cb();
+    $("msg").textContent = "엑셀 읽는 중…";
+    var s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload = function(){ $("msg").textContent = ""; cb(); };
+    s.onerror = function(){ $("msg").textContent = "엑셀 도구를 불러오지 못했어요. CSV로 저장해서 올리거나, 상품명을 붙여넣어 주세요."; };
+    document.head.appendChild(s);
+  }
+  function parseCSV(t){
+    return t.split(/\r?\n/).map(function(l){
+      var out=[], cur="", q=false;
+      for (var i=0;i<l.length;i++){var c=l[i]; if(q){ if(c==='"'&&l[i+1]==='"'){cur+='"';i++;} else if(c==='"') q=false; else cur+=c; } else if(c==='"') q=true; else if(c===','){out.push(cur);cur="";} else cur+=c;}
+      out.push(cur); return out;
+    });
+  }
+  function fromRows(rows){
+    var got = pickNames(rows);
+    if (!got.length){ $("msg").textContent = "상품명 칸을 못 찾았어요. 상품명만 복사해서 위 칸에 붙여넣어 주세요."; return; }
+    $("names").value = got.join("\n"); run(got);
+  }
+  // 헤더에서 상품명 열 찾기: 등록상품명 > 상품명 > 노출상품명
+  function pickNames(rows){
+    var pref = [/등록\s*상품명/, /^상품명$/, /상품명/, /product\s*name/i];
+    for (var p=0;p<pref.length;p++){
+      for (var r=0;r<Math.min(rows.length,15);r++){
+        var row = rows[r]||[];
+        for (var c=0;c<row.length;c++){
+          var h = String(row[c]||"").replace(/\s*\*\s*/g,"").trim();
+          if (h.length <= 20 && pref[p].test(h)){
+            var vals = rows.slice(r+1).map(function(x){return String((x||[])[c]||"").trim();})
+              .filter(function(v){return v.length>=4 && !/^(필수|선택|입력|예\))/.test(v);});
+            if (vals.length) return lines(vals.join("\n"));
+          }
+        }
+      }
+    }
+    // 헤더가 없으면: 첫 열이 글자면 첫 열 사용
+    var col = rows.map(function(x){return String((x||[])[0]||"").trim();}).filter(function(v){return /[가-힣]/.test(v);});
+    return lines(col.join("\n"));
+  }
+
+  // ── 검사
+  function run(names, keepFilter){
+    $("msg").textContent = "";
+    results = names.map(function(n){ return checkName(n, market); });
+    if (!keepFilter) filter = "all";
+    shown = 30;
+    render();
+    if (!keepFilter) $("out").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
+  }
+
+  function render(){
+    var n = results.length;
+    var c3 = results.filter(function(r){return r.score===3;}).length;
+    var c2 = results.filter(function(r){return r.score===2;}).length;
+    var ok = n - c3 - c2;
+    $("sum").innerHTML =
+      stat("s3", c3, "위험") + stat("s2", c2, "주의") + stat("s0", ok, "통과");
+    // 카테고리 칩
+    var cats = {};
+    results.forEach(function(r){ uniq(r.hits.filter(function(h){return h.sev>=2;}).map(function(h){return h.cat;})).forEach(function(c){cats[c]=(cats[c]||0)+1;}); });
+    var keys = Object.keys(cats).sort(function(a,b){return cats[b]-cats[a];});
+    $("cats").innerHTML = (n>1 && keys.length ? chip("all","전체 "+(c3+c2)) : "") + (n>1 ? keys.map(function(k){return chip(k, k+" "+cats[k]);}).join("") : "");
+    $("cats").querySelectorAll(".chip").forEach(function(b){ b.addEventListener("click", function(){ filter=b.dataset.k; shown=30; render(); }); });
+
+    var list = results.filter(function(r){
+      if (r.score < 2 && n > 1) return false;
+      if (filter==="all") return true;
+      return r.hits.some(function(h){return h.cat===filter && h.sev>=2;});
+    }).sort(function(a,b){return b.score-a.score;});
+    $("listTitle").textContent = n===1 ? "검사 결과" : (list.length ? "고칠 상품명 "+list.length+"개" : "");
+    $("dl").style.display = n>1 ? "" : "none";
+    $("out").classList.add("show");
+
+    if (!list.length){
+      $("list").innerHTML = '<div class="item allok"><b>걸리는 단어 없음</b>'+(n>1? n+'개 모두 ' : '')+'규정상 문제 되는 단어를 찾지 못했어요.</div>';
+      return;
+    }
+    $("list").innerHTML = list.slice(0, shown).map(card).join("") +
+      (list.length > shown ? '<button type="button" class="ghost more" id="more">'+ (list.length-shown) +'개 더 보기</button>' : "");
+    $("list").querySelectorAll(".copy").forEach(function(b){
+      b.addEventListener("click", function(){
+        var t = b.dataset.t;
+        (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ b.textContent="복사됨"; setTimeout(function(){b.textContent="복사";},1400); })
+          .catch(function(){ b.textContent="길게 눌러 복사"; });
+      });
+    });
+    var m = $("more"); if (m) m.addEventListener("click", function(){ shown += 50; render(); });
+  }
+  function stat(cls, v, label){ return '<div class="stat '+cls+'"><b>'+v.toLocaleString()+'</b><span>'+label+'</span></div>'; }
+  function chip(k, label){ return '<button type="button" class="chip" data-k="'+h(k)+'" aria-pressed="'+(filter===k)+'">'+h(label)+'</button>'; }
+  function uniq(a){ return a.filter(function(x,i){return a.indexOf(x)===i;}); }
+  function h(s){ return String(s).replace(/[&<>"']/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+
+  function card(r){
+    var spans = r.hits.filter(function(x){return x.start>=0;}).sort(function(a,b){return a.start-b.start;});
+    var html = "", pos = 0;
+    spans.forEach(function(x){
+      if (x.start < pos) return;
+      html += h(r.name.slice(pos, x.start)) + '<mark class="m'+x.sev+'" title="'+h(x.cat)+'">' + h(r.name.slice(x.start, x.end)) + '</mark>';
+      pos = x.end;
+    });
+    html += h(r.name.slice(pos));
+    // 같은 카테고리·같은 사유는 묶어서 보여주기
+    var groups = [];
+    r.hits.forEach(function(x){
+      var g = groups.find(function(g){return g.cat===x.cat && g.why===x.why;});
+      if (g){ if (g.words.indexOf(x.word)<0) g.words.push(x.word); } else groups.push({cat:x.cat, sev:x.sev, why:x.why, fix:x.fix, words:[x.word]});
+    });
+    var hits = groups.length ? '<ul class="hits">' + groups.map(function(g){
+      return '<li><span class="badge s'+(g.sev===1?'0':g.sev)+'"'+(g.sev===1?' style="background:var(--graybg);color:var(--gray)"':'')+'>'+SEVNAME[g.sev]+'</span><p><b>'+h(g.cat)+'</b> · “'+h(g.words.join('”, “'))+'”<br>'+h(g.why)+'<span class="fix">→ '+h(g.fix)+'</span></p></li>';
+    }).join("") + '</ul>' : '<p class="note">걸리는 단어가 없어요.</p>';
+    var clean = (r.clean && r.clean !== r.name) ? '<div class="clean"><div><small>자동으로 고친 상품명 (확인 후 사용)</small>'+h(r.clean)+'</div><button type="button" class="copy" data-t="'+h(r.clean)+'">복사</button></div>' : "";
+    return '<article class="item"><p class="nm">'+html+'</p>'+hits+clean+'</article>';
+  }
+
+  // ── CSV 내보내기 (엑셀에서 바로 열리게 BOM 포함)
+  $("dl").addEventListener("click", function(){
+    var head = ["판정","원래 상품명","고친 상품명","걸린 단어","사유"];
+    var body = results.slice().sort(function(a,b){return b.score-a.score;}).map(function(r){
+      return [r.score===3?"위험":r.score===2?"주의":"통과", r.name, r.clean,
+        r.hits.filter(function(x){return x.sev>=2;}).map(function(x){return x.word;}).join(" / "),
+        uniq(r.hits.filter(function(x){return x.sev>=2;}).map(function(x){return x.cat;})).join(" / ")];
+    });
+    var csv = "﻿" + [head].concat(body).map(function(row){return row.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(",");}).join("\r\n");
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
+    a.download = "상품명_검사결과_" + (market==="c"?"쿠팡":"스마트스토어") + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+})();
+</script>
+</body>
+</html>
